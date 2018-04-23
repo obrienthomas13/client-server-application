@@ -6,18 +6,54 @@ import (
   "os"
   "encoding/gob"
   "bytes"
+  "bufio"
+  "io"
   // "encoding/binary"
   tcp "./tcp"
   "log"
-	// "crypto/sha1"
 )
 
-// type P struct {
-//     X, Y, Z int
-//     Name    string
-// }
+func fileIntoByteArr(input string) []byte {
+  var data []byte
+  var eol bool
+  var str_array []string
+
+  file, err := os.Open(input)
+  if err != nil {
+    panic(err)
+  }
+
+  defer file.Close()
+
+  reader := bufio.NewReader(file)
+  buffer := bytes.NewBuffer(make([]byte,0))
+
+  for {
+    data, eol, err = reader.ReadLine()
+    if err != nil {
+      break
+    }
+    buffer.Write(data)
+    if !eol {
+      str_array = append(str_array, buffer.String())
+    }
+  }
+
+  if err == io.EOF {
+    err = nil
+  }
+  result := []byte(buffer.String())
+  buffer.Reset()
+  return result
+}
 
 func main() {
+  inputFile := os.Args[1]
+  fileIntoBytes := fileIntoByteArr(inputFile)
+  fmt.Println(fileIntoBytes)
+  // fmt.Println(fileIntoByteArr(inputFile))
+
+  // fmt.Println(inputFile)
   typeOf := "unix" // or "unixgram" or "unixpacket"
   laddr := net.UnixAddr{"/tmp/unixdomaincli", typeOf}
   conn, err := net.DialUnix(typeOf, &laddr/*can be nil*/,
@@ -26,10 +62,6 @@ func main() {
       panic(err)
   }
   defer os.Remove("/tmp/unixdomaincli")
-
-
-
-
 
   // Initialize the encoder and decoder.  Normally enc and dec would be
   // bound to network connections and the encoder and decoder would
@@ -44,7 +76,7 @@ func main() {
   // Encode (send) the value.
   testHeader := tcp.TCPHeader {
     Options: []tcp.TCPOptions {
-      tcp.TCPOptions {Kind: 0xFF, Length: 0xFF},
+      tcp.TCPOptions {Kind: 0xA0, Length: 0xFF, Data: fileIntoBytes},
       tcp.TCPOptions {Kind: 0xAA, Length: 0xAA},
     },
   }
@@ -52,7 +84,7 @@ func main() {
   if testingHeaderEncode != nil {
       log.Fatal("encode error:", testingHeaderEncode)
   }
-  fmt.Println(network.Bytes())
+  // fmt.Println(network.Bytes())
 
 
 

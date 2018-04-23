@@ -4,9 +4,9 @@ import (
   "net"
   "fmt"
   "os"
-  // "encoding/gob"
-  // "log"
-  // tcp "./tcp"
+  "encoding/gob"
+  "log"
+  tcp "./tcp"
   // "bytes"
 )
 
@@ -24,34 +24,43 @@ func main() {
        panic(err)
     }
     // encoder := gob.NewEncoder(conn)
-    // decoder := gob.NewDecoder(conn)
+    decoder := gob.NewDecoder(conn)
 
     // var network bytes.Buffer        // Stand-in for a network connection
     // dec := gob.NewDecoder(&network) // Will read from network.
-    var buf [1024]byte
-    n, err := conn.Read(buf[:])
-    // _, err := conn.Read(buf[:])
-    if err != nil {
-       panic(err)
-    }
-    // // // Decode (receive) the value.
-    // // var tcp.TCPHeader testingHeaderDecode
-    // testHeader := tcp.TCPHeader {
-    //   Options: []tcp.TCPOptions {
-    //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
-    //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
-    //   },
-    // }
-    // err = decoder.Decode(&testHeader)
-    // // testHeader = decoder.Decode(&q)
 
+
+    // var buf [1024]byte
+    // n, err := conn.Read(buf[:])
+    // // _, err := conn.Read(buf[:])
     // if err != nil {
-    //     log.Fatal("decode error:", err)
+    //    panic(err)
     // }
-    // fmt.Printf(string(testHeader.Options[0].Kind))
+
+
+    // // // Decode (receive) the value.
+    var testingHeaderDecode tcp.TCPHeader
+    testingHeaderDecode = tcp.TCPHeader {
+      Options: []tcp.TCPOptions {
+        tcp.TCPOptions {Kind: 0x00, Length: 0x00},
+        tcp.TCPOptions {Kind: 0x00, Length: 0x00},
+      },
+    }
+    err = decoder.Decode(&testingHeaderDecode)
+    // testHeader = decoder.Decode(&q)
+
+    if err != nil {
+        log.Fatal("decode error:", err)
+    }
+    // fmt.Printf(string(testingHeaderDecode.Options[0].Kind))
+    fmt.Println(testingHeaderDecode.Options[0].Data)
     // fmt.Printf("let's seperate these two");
     // fmt.Printf("LIKE REALLY SEPERATE THEM");
-    fmt.Printf("Testing this out: %s\n", string(buf[:n]));
+
+
+    // fmt.Printf("Testing this out: %s\n", string(buf[:n]));
+
+
     // fmt.Printf(n);
     // fmt.Printf("Testing this out: %s\n", "sure");
     // fmt.Print("")

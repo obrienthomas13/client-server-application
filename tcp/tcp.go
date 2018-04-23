@@ -20,17 +20,3 @@ type TCPOptions struct {
   Length uint8
   Data []byte
 }
-
-// func initialSyn() TCPHeader {
-//   return TCPHeader {
-//     Options: []TCPOptions {
-//       TCPOptions {Kind: 0xFF, Length: 0xFF},
-//       TCPOptions {Kind: 0xAA, Length: 0xAA},
-//     },
-//   }
-// }
-//
-// func main() {
-//   // test := initialSyn()
-//   // fmt.Print(test.Options[1].Kind)
-// }
