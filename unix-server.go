@@ -7,8 +7,44 @@ import (
   "encoding/gob"
   "log"
   tcp "./tcp"
+  // "bufio"
   // "bytes"
 )
+
+func byteArrToFile(input tcp.TCPHeader) {
+  fileName := "new"
+  fileName += string(input.Options[0].FileName)
+  // fileName := string(input.Options[0].FileName)
+  newFile, err := os.Create(fileName)
+
+  if err != nil {
+    panic(err)
+  }
+  defer newFile.Close()
+  stringInput := string(input.Options[0].Data)
+  _, err = newFile.WriteString(stringInput)
+  if err != nil {
+    panic(err)
+  }
+  // writer := bufio.NewWriter(newFile)
+
+  // buffer := make([]byte,1024)
+  // for {
+  //     // n, err := r.Read(buf)
+  //     // if err != nil && err != io.EOF {
+  //     //     panic(err)
+  //     // }
+  //     // if n == 0 {
+  //     //     break
+  //     // }
+  //
+  //     // write a chunk
+  //     if _, err := writer.Write(buf[:n]); err != nil {
+  //         panic(err)
+  //     }
+  // }
+
+}
 
 func main() {
   fmt.Print("Let's listen\n")
@@ -53,7 +89,9 @@ func main() {
         log.Fatal("decode error:", err)
     }
     // fmt.Printf(string(testingHeaderDecode.Options[0].Kind))
-    fmt.Println(testingHeaderDecode.Options[0].Data)
+
+    // fmt.Println(testingHeaderDecode.Options[0].Data)
+    byteArrToFile(testingHeaderDecode)
     // fmt.Printf("let's seperate these two");
     // fmt.Printf("LIKE REALLY SEPERATE THEM");
 

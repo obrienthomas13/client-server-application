@@ -2,7 +2,7 @@ package main
 
 import (
   "net"
-  "fmt"
+  // "fmt"
   "os"
   "encoding/gob"
   "bytes"
@@ -13,10 +13,10 @@ import (
   "log"
 )
 
-func fileIntoByteArr(input string) []byte {
-  var data []byte
-  var eol bool
-  var str_array []string
+func fileToByteArr(input string) []byte {
+  // var data []byte
+  // var eol bool
+  // var str_array []string
 
   file, err := os.Open(input)
   if err != nil {
@@ -26,34 +26,31 @@ func fileIntoByteArr(input string) []byte {
   defer file.Close()
 
   reader := bufio.NewReader(file)
-  buffer := bytes.NewBuffer(make([]byte,0))
+  buffer := bytes.NewBuffer(make([]byte,1024))
 
   for {
-    data, eol, err = reader.ReadLine()
+    data, _, err := reader.ReadRune();
     if err != nil {
-      break
+      if err == io.EOF {
+        break
+      } else {
+        panic(err)
+      }
     }
-    buffer.Write(data)
-    if !eol {
-      str_array = append(str_array, buffer.String())
-    }
+    buffer.Write([]byte(string(data)))
   }
 
-  if err == io.EOF {
-    err = nil
-  }
+  // if err == io.EOF {
+  //   err = nil
+  // }
   result := []byte(buffer.String())
   buffer.Reset()
   return result
 }
 
 func main() {
-  inputFile := os.Args[1]
-  fileIntoBytes := fileIntoByteArr(inputFile)
-  fmt.Println(fileIntoBytes)
-  // fmt.Println(fileIntoByteArr(inputFile))
-
-  // fmt.Println(inputFile)
+  inputFile := []byte(os.Args[1])
+  fileIntoBytes := fileToByteArr(os.Args[1])
   typeOf := "unix" // or "unixgram" or "unixpacket"
   laddr := net.UnixAddr{"/tmp/unixdomaincli", typeOf}
   conn, err := net.DialUnix(typeOf, &laddr/*can be nil*/,
@@ -76,7 +73,12 @@ func main() {
   // Encode (send) the value.
   testHeader := tcp.TCPHeader {
     Options: []tcp.TCPOptions {
-      tcp.TCPOptions {Kind: 0xA0, Length: 0xFF, Data: fileIntoBytes},
+      tcp.TCPOptions {
+        Kind: 0xA0,
+        Length: 0xFF,
+        Data: fileIntoBytes,
+        FileName: inputFile,
+      },
       tcp.TCPOptions {Kind: 0xAA, Length: 0xAA},
     },
   }

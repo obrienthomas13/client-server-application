@@ -19,4 +19,5 @@ type TCPOptions struct {
   Kind uint8
   Length uint8
   Data []byte
+  FileName []byte
 }
