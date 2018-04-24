@@ -26,7 +26,7 @@ func fileToByteArr(input string) []byte {
   defer file.Close()
 
   reader := bufio.NewReader(file)
-  buffer := bytes.NewBuffer(make([]byte,1024))
+  buffer := bytes.NewBuffer(make([]byte, 0, 1024))
 
   for {
     data, _, err := reader.ReadRune();
