@@ -12,9 +12,7 @@ import (
 )
 
 func byteArrToFile(input tcp.TCPHeader) {
-  fileName := "new"
-  fileName += string(input.Options[0].FileName)
-  // fileName := string(input.Options[0].FileName)
+  fileName := "new" + string(input.Options[0].FileName)
   newFile, err := os.Create(fileName)
 
   if err != nil {
@@ -43,54 +41,61 @@ func byteArrToFile(input tcp.TCPHeader) {
   //         panic(err)
   //     }
   // }
-
 }
 
+// func closeServer() {
+//   os.Remove("/tmp/unixdomain")
+// }
+
 func main() {
-  fmt.Print("Let's listen\n")
   l, err := net.ListenUnix("unix",  &net.UnixAddr{"/tmp/unixdomain", "unix"})
+  fmt.Print("Let's listen\n")
   if err != nil {
      panic(err)
   }
   defer os.Remove("/tmp/unixdomain")
+
+  fmt.Println("BEGINNING MY DUDE")
+  conn, err := l.AcceptUnix()
+  fmt.Print("Found connection\n")
+  if err != nil {
+     panic(err)
+  }
+
+  x := 0
   for {
-    conn, err := l.AcceptUnix()
-    fmt.Print("Found connection\n")
-    if err != nil {
-       panic(err)
-    }
-    // encoder := gob.NewEncoder(conn)
-    decoder := gob.NewDecoder(conn)
-
-    // var network bytes.Buffer        // Stand-in for a network connection
-    // dec := gob.NewDecoder(&network) // Will read from network.
-
-
-    // var buf [1024]byte
-    // n, err := conn.Read(buf[:])
-    // // _, err := conn.Read(buf[:])
+    fmt.Println("LOOP NUMBER ", x, " MY DUDE")
+    // fmt.Println("beginning")
+    // conn, err := l.AcceptUnix()
+    // fmt.Print("Found connection\n")
     // if err != nil {
     //    panic(err)
     // }
-
+    // encoder := gob.NewEncoder(conn)
+    fmt.Println("ESTABLISH DECODER MY DUDE")
+    decoder := gob.NewDecoder(conn)
 
     // // // Decode (receive) the value.
+    fmt.Println("SAMPLE STRUCT MY DUDE")
     var testingHeaderDecode tcp.TCPHeader
-    testingHeaderDecode = tcp.TCPHeader {
-      Options: []tcp.TCPOptions {
-        tcp.TCPOptions {Kind: 0x00, Length: 0x00},
-        tcp.TCPOptions {Kind: 0x00, Length: 0x00},
-      },
-    }
+    // testingHeaderDecode = tcp.TCPHeader {
+    //   Options: []tcp.TCPOptions {
+    //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
+    //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
+    //   },
+    // }
+    fmt.Println("DECODE THAT STRUCT MY DUDE")
     err = decoder.Decode(&testingHeaderDecode)
     // testHeader = decoder.Decode(&q)
 
+    fmt.Println("ERROR CHECKING MY DUDE")
     if err != nil {
         log.Fatal("decode error:", err)
     }
     // fmt.Printf(string(testingHeaderDecode.Options[0].Kind))
 
     // fmt.Println(testingHeaderDecode.Options[0].Data)
+    fmt.Println("MAKE IT A FILE MY DUDE")
     byteArrToFile(testingHeaderDecode)
     // fmt.Printf("let's seperate these two");
     // fmt.Printf("LIKE REALLY SEPERATE THEM");
@@ -102,6 +107,9 @@ func main() {
     // fmt.Printf(n);
     // fmt.Printf("Testing this out: %s\n", "sure");
     // fmt.Print("")
-    conn.Close()
+    fmt.Println("end")
+    x += 1
+    // conn.Close()
   }
+  conn.Close()
 }

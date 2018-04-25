@@ -2,7 +2,7 @@ package main
 
 import (
   "net"
-  // "fmt"
+  "fmt"
   "os"
   "encoding/gob"
   "bytes"
@@ -49,8 +49,8 @@ func fileToByteArr(input string) []byte {
 }
 
 func main() {
-  inputFile := []byte(os.Args[1])
-  fileIntoBytes := fileToByteArr(os.Args[1])
+  // inputFile := []byte(os.Args[1])
+  // fileIntoBytes := fileToByteArr(os.Args[1])
   typeOf := "unix" // or "unixgram" or "unixpacket"
   laddr := net.UnixAddr{"/tmp/unixdomaincli", typeOf}
   conn, err := net.DialUnix(typeOf, &laddr/*can be nil*/,
@@ -60,58 +60,68 @@ func main() {
   }
   defer os.Remove("/tmp/unixdomaincli")
 
-  // Initialize the encoder and decoder.  Normally enc and dec would be
-  // bound to network connections and the encoder and decoder would
-  // run in different processes.
   var network bytes.Buffer        // Stand-in for a network connection
   enc := gob.NewEncoder(&network) // Will write to network.
 
-
-
-  // enc := gob.NewEncoder(conn) // Will write to network.
-  // dec := gob.NewDecoder(&network) // Will read from network.
-  // Encode (send) the value.
-  testHeader := tcp.TCPHeader {
-    Options: []tcp.TCPOptions {
-      tcp.TCPOptions {
-        Kind: 0xA0,
-        Length: 0xFF,
-        Data: fileIntoBytes,
-        FileName: inputFile,
-      },
-      tcp.TCPOptions {Kind: 0xAA, Length: 0xAA},
-    },
-  }
-  testingHeaderEncode := enc.Encode(testHeader)
-  if testingHeaderEncode != nil {
-      log.Fatal("encode error:", testingHeaderEncode)
-  }
-  // fmt.Println(network.Bytes())
-
-
-
-  // fmt.Println(testingHeaderEncode)
-  // Decode (receive) the value.
-  // var q Q
-  // err = dec.Decode(&q)
-  // if err != nil {
-  //     log.Fatal("decode error:", err)
-  // }
-  // fmt.Printf("%q: {%d,%d}\n", q.Name, *q.X, *q.Y)
-
-
-
-  _, err = conn.Write(network.Bytes())
-  // _, err = conn.Write([]byte("hello"))
-
-  // _, err = conn.Write([]byte(tcp.TCPHeader {
-  //   Options: []tcp.TCPOptions {
-  //     tcp.TCPOptions {Kind: 0xFF, Length: 0xFF},
-  //     tcp.TCPOptions {Kind: 0xAA, Length: 0xAA},
-  //   },
-  // }))
-  if err != nil {
+  for {
+    // buf := bufio.NewReader(os.Stdin)
+    fmt.Print("Enter a file name: ")
+    userInput := bufio.NewReader(os.Stdin)
+    fileName, err := userInput.ReadBytes('\n')
+    if err != nil {
       panic(err)
+    }
+    fileName = fileName[:len(fileName)-1]
+    // fmt.Print(fileName)
+    // fileNameString = string(fileName)
+
+    fmt.Println()
+    // inputFile := []byte(fileName)
+    // inputFile := fileName
+    fileIntoBytes := fileToByteArr(string(fileName))
+    // var network bytes.Buffer        // Stand-in for a network connection
+    // enc := gob.NewEncoder(&network) // Will write to network.
+
+    testHeader := tcp.TCPHeader {
+      Options: []tcp.TCPOptions {
+        tcp.TCPOptions {
+          Kind: 0xA0,
+          Length: 0xFF,
+          Data: fileIntoBytes,
+          FileName: fileName,
+        },
+        tcp.TCPOptions {Kind: 0xAA, Length: 0xAA},
+      },
+    }
+    fmt.Println("First encode")
+    testingHeaderEncode := enc.Encode(testHeader)
+    if testingHeaderEncode != nil {
+        log.Fatal("encode error:", testingHeaderEncode)
+    }
+
+    fmt.Println("First write")
+    _, err = conn.Write(network.Bytes())
+    if err != nil {
+        panic(err)
+    }
+
+    // conn, err = net.DialUnix(typeOf, &laddr/*can be nil*/,
+    //     &net.UnixAddr{"/tmp/unixdomain", typeOf})
+    //
+    // testHeader.Options[0].Length = 0xAF
+    // fmt.Println("Second encode")
+    // testingHeaderEncode = enc.Encode(testHeader)
+    // if testingHeaderEncode != nil {
+    //     log.Fatal("encode error:", testingHeaderEncode)
+    // }
+    // fmt.Println("Second write")
+    // _, err = conn.Write(network.Bytes())
+    // if err != nil {
+    //     panic(err)
+    // }
+// end of for loop
   }
+
+
   conn.Close()
 }
