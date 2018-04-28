@@ -7,29 +7,57 @@ import (
   "encoding/gob"
   "log"
   tcp "./tcp"
-  // "bufio"
-  // "bytes"
+  "image"
+  "image/png"
+  "strings"
+  "bytes"
 )
 
-func byteArrToFile(input tcp.TCPHeader) {
-  fmt.Println("BYTEARRTOFILE ARE YOU HAPPENING")
+func checkIfImageType(file string) bool {
+  imageTypes := [...]string{".gif", ".jpeg", ".jpg", ".pdf", ".png"}
+  for _, imgType := range imageTypes {
+    if strings.Contains(file, imgType) {
+      return true
+    }
+  }
+  return false
+}
+
+func byteArrToImgFile(input tcp.TCPHeader) {
+  fmt.Println("Convert the image!!")
+  img, _, _ := image.Decode(bytes.NewReader(input.Options[0].Data))
   fileName := "new" + string(input.Options[0].FileName)
-  fmt.Println("BYTEARRTOFILE ABOUT TO CREATE FILE")
   newFile, err := os.Create(fileName)
-  fmt.Println("BYTEARRTOFILE ERR CHECK")
+  if err != nil {
+    panic(err)
+  }
+  err = png.Encode(newFile, img)
   if err != nil {
     panic(err)
   }
   defer newFile.Close()
-  fmt.Println("BYTEARRTOFILE STRINGINPUT")
-  stringInput := string(input.Options[0].Data)
-  fmt.Println("BYTEARRTOFILE WRITE THAT DATA")
-  _, err = newFile.WriteString(stringInput)
-  fmt.Println("BYTEARRTOFILE ERR CHECK")
+
+}
+
+func byteArrToTxtFile(input tcp.TCPHeader) {
+  // fmt.Println("BYTEARRTOFILE ARE YOU HAPPENING")
+  fileName := "new" + string(input.Options[0].FileName)
+  // fmt.Println("BYTEARRTOFILE ABOUT TO CREATE FILE")
+  newFile, err := os.Create(fileName)
+  // fmt.Println("BYTEARRTOFILE ERR CHECK")
   if err != nil {
     panic(err)
   }
-  fmt.Println("BYTEARRTOFILE AFTER ERR CHECK")
+  defer newFile.Close()
+  // fmt.Println("BYTEARRTOFILE STRINGINPUT")
+  stringInput := string(input.Options[0].Data)
+  // fmt.Println("BYTEARRTOFILE WRITE THAT DATA")
+  _, err = newFile.WriteString(stringInput)
+  // fmt.Println("BYTEARRTOFILE ERR CHECK")
+  if err != nil {
+    panic(err)
+  }
+  // fmt.Println("BYTEARRTOFILE AFTER ERR CHECK")
   // writer := bufio.NewWriter(newFile)
 
   // buffer := make([]byte,1024)
@@ -92,7 +120,7 @@ func main() {
     //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
     //   }[],
     // }
-    // fmt.Println("DECODE THAT STRUCT MY DUDE")
+    // fmt.Println("DECODE THAT STRUCT MY DUDE"))
     err = decoder.Decode(&testingHeaderDecode)
     // testHeader = decoder.Decode(&q)
 
@@ -104,12 +132,19 @@ func main() {
 
     // fmt.Println(testingHeaderDecode.Options[0].Data)
     // fmt.Println("MAKE IT A FILE MY DUDE")
-    byteArrToFile(testingHeaderDecode)
+    if checkIfImageType(string(testingHeaderDecode.Options[0].FileName)) {
+      byteArrToImgFile(testingHeaderDecode)
+    } else {
+      byteArrToTxtFile(testingHeaderDecode)
+    }
+    // byteArrToTxtFile(testingHeaderDecode)
     // testingHeaderDecode
     // fmt.Printf("let's seperate these two");
     // fmt.Printf("LIKE REALLY SEPERATE THEM");
-    testingHeaderDecode.Options[0].Data = []byte("")
-    testingHeaderDecode.Options[0].FileName = []byte("")
+
+    // testingHeaderDecode.Options[0].Data = []byte("")
+    // testingHeaderDecode.Options[0].FileName = []byte("")
+
    //  testingHeaderDecode = tcp.TCPHeader {
    //   Options: []tcp.TCPOptions {
    //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},

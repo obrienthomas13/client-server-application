@@ -12,6 +12,7 @@ import (
   tcp "./tcp"
   "log"
   "strings"
+  "image/png"
 )
 
 func checkIfImageType(file string) bool {
@@ -25,7 +26,25 @@ func checkIfImageType(file string) bool {
 }
 
 func imgFileToByteArr(input string) []byte {
-  return []byte("hello")
+  file, err := os.Open(input)
+  defer file.Close()
+  if err != nil {
+    panic(err)
+  }
+
+  img, err := png.Decode(file)
+  if err != nil {
+    panic(err)
+  }
+  // return img
+
+  buffer := new(bytes.Buffer)
+  err = png.Encode(buffer, img)
+  if err != nil {
+    panic(err)
+  }
+  result := []byte(buffer.String())
+  return result
 }
 
 func txtFileToByteArr(input string) []byte {
