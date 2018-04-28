@@ -12,18 +12,24 @@ import (
 )
 
 func byteArrToFile(input tcp.TCPHeader) {
+  fmt.Println("BYTEARRTOFILE ARE YOU HAPPENING")
   fileName := "new" + string(input.Options[0].FileName)
+  fmt.Println("BYTEARRTOFILE ABOUT TO CREATE FILE")
   newFile, err := os.Create(fileName)
-
+  fmt.Println("BYTEARRTOFILE ERR CHECK")
   if err != nil {
     panic(err)
   }
   defer newFile.Close()
+  fmt.Println("BYTEARRTOFILE STRINGINPUT")
   stringInput := string(input.Options[0].Data)
+  fmt.Println("BYTEARRTOFILE WRITE THAT DATA")
   _, err = newFile.WriteString(stringInput)
+  fmt.Println("BYTEARRTOFILE ERR CHECK")
   if err != nil {
     panic(err)
   }
+  fmt.Println("BYTEARRTOFILE AFTER ERR CHECK")
   // writer := bufio.NewWriter(newFile)
 
   // buffer := make([]byte,1024)
@@ -82,7 +88,7 @@ func main() {
     //   Options: []tcp.TCPOptions {
     //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
     //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
-    //   },
+    //   }[],
     // }
     fmt.Println("DECODE THAT STRUCT MY DUDE")
     err = decoder.Decode(&testingHeaderDecode)
@@ -97,9 +103,17 @@ func main() {
     // fmt.Println(testingHeaderDecode.Options[0].Data)
     fmt.Println("MAKE IT A FILE MY DUDE")
     byteArrToFile(testingHeaderDecode)
+    // testingHeaderDecode
     // fmt.Printf("let's seperate these two");
     // fmt.Printf("LIKE REALLY SEPERATE THEM");
-
+    testingHeaderDecode.Options[0].Data = []byte("")
+    testingHeaderDecode.Options[0].FileName = []byte("")
+   //  testingHeaderDecode = tcp.TCPHeader {
+   //   Options: []tcp.TCPOptions {
+   //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
+   //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
+   //   },
+   // }
 
     // fmt.Printf("Testing this out: %s\n", string(buf[:n]));
 
