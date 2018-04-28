@@ -11,13 +11,24 @@ import (
   // "encoding/binary"
   tcp "./tcp"
   "log"
+  "strings"
 )
 
-func fileToByteArr(input string) []byte {
-  // var data []byte
-  // var eol bool
-  // var str_array []string
+func checkIfImageType(file string) bool {
+  imageTypes := [...]string{".gif", ".jpeg", ".jpg", ".pdf", ".png"}
+  for _, imgType := range imageTypes {
+    if strings.Contains(file, imgType) {
+      return true
+    }
+  }
+  return false
+}
 
+func imgFileToByteArr(input string) []byte {
+  return []byte("hello")
+}
+
+func txtFileToByteArr(input string) []byte {
   file, err := os.Open(input)
   if err != nil {
     panic(err)
@@ -39,10 +50,6 @@ func fileToByteArr(input string) []byte {
     }
     buffer.Write([]byte(string(data)))
   }
-
-  // if err == io.EOF {
-  //   err = nil
-  // }
   result := []byte(buffer.String())
   buffer.Reset()
   return result
@@ -50,7 +57,8 @@ func fileToByteArr(input string) []byte {
 
 func main() {
   // inputFile := []byte(os.Args[1])
-  // fileIntoBytes := fileToByteArr(os.Args[1])
+  // fileIntoBytes := txtFileToByteArr(os.Args[1])
+  var fileIntoBytes []byte
   typeOf := "unix" // or "unixgram" or "unixpacket"
   laddr := net.UnixAddr{"/tmp/unixdomaincli", typeOf}
   conn, err := net.DialUnix(typeOf, &laddr/*can be nil*/,
@@ -60,29 +68,25 @@ func main() {
   }
   defer os.Remove("/tmp/unixdomaincli")
 
-  // var network bytes.Buffer        // Stand-in for a network connection
-  // enc := gob.NewEncoder(&network) // Will write to network.
-
   for {
     var payload bytes.Buffer        // Stand-in for a network connection
     enc := gob.NewEncoder(&payload) // Will write to network.
-    // buf := bufio.NewReader(os.Stdin)
     fmt.Print("Enter a file name: ")
     userInput := bufio.NewReader(os.Stdin)
+    // userInput := checkIfImageType(os.Stdin)
     fileName, err := userInput.ReadBytes('\n')
     if err != nil {
       panic(err)
     }
     fileName = fileName[:len(fileName)-1]
-    // fmt.Print(fileName)
-    // fileNameString = string(fileName)
+    if checkIfImageType(string(fileName)) {
+      fileIntoBytes = imgFileToByteArr(string(fileName))
+    } else {
+      fileIntoBytes = txtFileToByteArr(string(fileName))
+    }
 
     fmt.Println()
-    // inputFile := []byte(fileName)
-    // inputFile := fileName
-    fileIntoBytes := fileToByteArr(string(fileName))
-    // var payload bytes.Buffer        // Stand-in for a network connection
-    // enc := gob.NewEncoder(&payload) // Will write to network.
+    // fileIntoBytes := txtFileToByteArr(string(fileName))
 
     testHeader := tcp.TCPHeader {
       Options: []tcp.TCPOptions {
@@ -106,25 +110,6 @@ func main() {
     if err != nil {
         panic(err)
     }
-
-    // conn, err = net.DialUnix(typeOf, &laddr/*can be nil*/,
-    //     &net.UnixAddr{"/tmp/unixdomain", typeOf})
-    //
-    // testHeader.Options[0].Length = 0xAF
-    // fmt.Println("Second encode")
-    // testingHeaderEncode = enc.Encode(testHeader)
-    // if testingHeaderEncode != nil {
-    //     log.Fatal("encode error:", testingHeaderEncode)
-    // }
-    // fmt.Println("Second write")
-    // _, err = conn.Write(payload.Bytes())
-    // if err != nil {
-    //     panic(err)
-    // }
-// end of for loop
-    fmt.Println("end")
   }
-
-
   conn.Close()
 }
