@@ -60,10 +60,12 @@ func main() {
   }
   defer os.Remove("/tmp/unixdomaincli")
 
-  var network bytes.Buffer        // Stand-in for a network connection
-  enc := gob.NewEncoder(&network) // Will write to network.
+  // var network bytes.Buffer        // Stand-in for a network connection
+  // enc := gob.NewEncoder(&network) // Will write to network.
 
   for {
+    var payload bytes.Buffer        // Stand-in for a network connection
+    enc := gob.NewEncoder(&payload) // Will write to network.
     // buf := bufio.NewReader(os.Stdin)
     fmt.Print("Enter a file name: ")
     userInput := bufio.NewReader(os.Stdin)
@@ -79,8 +81,8 @@ func main() {
     // inputFile := []byte(fileName)
     // inputFile := fileName
     fileIntoBytes := fileToByteArr(string(fileName))
-    // var network bytes.Buffer        // Stand-in for a network connection
-    // enc := gob.NewEncoder(&network) // Will write to network.
+    // var payload bytes.Buffer        // Stand-in for a network connection
+    // enc := gob.NewEncoder(&payload) // Will write to network.
 
     testHeader := tcp.TCPHeader {
       Options: []tcp.TCPOptions {
@@ -93,14 +95,14 @@ func main() {
         tcp.TCPOptions {Kind: 0xAA, Length: 0xAA},
       },
     }
-    fmt.Println("First encode")
+    // fmt.Println("First encode")
     testingHeaderEncode := enc.Encode(testHeader)
     if testingHeaderEncode != nil {
         log.Fatal("encode error:", testingHeaderEncode)
     }
 
-    fmt.Println("First write")
-    _, err = conn.Write(network.Bytes())
+    // fmt.Println("First write")
+    _, err = conn.Write(payload.Bytes())
     if err != nil {
         panic(err)
     }
@@ -115,11 +117,12 @@ func main() {
     //     log.Fatal("encode error:", testingHeaderEncode)
     // }
     // fmt.Println("Second write")
-    // _, err = conn.Write(network.Bytes())
+    // _, err = conn.Write(payload.Bytes())
     // if err != nil {
     //     panic(err)
     // }
 // end of for loop
+    fmt.Println("end")
   }
 
 

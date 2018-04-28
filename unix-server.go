@@ -68,9 +68,11 @@ func main() {
      panic(err)
   }
 
+  // decoder := gob.NewDecoder(conn)
   x := 0
   for {
-    fmt.Println("LOOP NUMBER ", x, " MY DUDE")
+    fmt.Println("beginning")
+    // fmt.Println("LOOP NUMBER ", x, " MY DUDE")
     // fmt.Println("beginning")
     // conn, err := l.AcceptUnix()
     // fmt.Print("Found connection\n")
@@ -78,11 +80,11 @@ func main() {
     //    panic(err)
     // }
     // encoder := gob.NewEncoder(conn)
-    fmt.Println("ESTABLISH DECODER MY DUDE")
+    // fmt.Println("ESTABLISH DECODER MY DUDE")
     decoder := gob.NewDecoder(conn)
 
     // // // Decode (receive) the value.
-    fmt.Println("SAMPLE STRUCT MY DUDE")
+    // fmt.Println("SAMPLE STRUCT MY DUDE")
     var testingHeaderDecode tcp.TCPHeader
     // testingHeaderDecode = tcp.TCPHeader {
     //   Options: []tcp.TCPOptions {
@@ -90,18 +92,18 @@ func main() {
     //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
     //   }[],
     // }
-    fmt.Println("DECODE THAT STRUCT MY DUDE")
+    // fmt.Println("DECODE THAT STRUCT MY DUDE")
     err = decoder.Decode(&testingHeaderDecode)
     // testHeader = decoder.Decode(&q)
 
-    fmt.Println("ERROR CHECKING MY DUDE")
+    // fmt.Println("ERROR CHECKING MY DUDE")
     if err != nil {
         log.Fatal("decode error:", err)
     }
     // fmt.Printf(string(testingHeaderDecode.Options[0].Kind))
 
     // fmt.Println(testingHeaderDecode.Options[0].Data)
-    fmt.Println("MAKE IT A FILE MY DUDE")
+    // fmt.Println("MAKE IT A FILE MY DUDE")
     byteArrToFile(testingHeaderDecode)
     // testingHeaderDecode
     // fmt.Printf("let's seperate these two");
