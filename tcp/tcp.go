@@ -1,7 +1,7 @@
 package tcp
 
 type TCPHeader struct {
-  SourcePort uint16
+  SourcePort []byte
   DestinationPort uint16
   SequenceNumber uint32
   AcknowledgementNumber uint32
