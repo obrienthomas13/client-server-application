@@ -8,7 +8,6 @@ import (
   "bytes"
   "bufio"
   "io"
-  // "encoding/binary"
   tcp "./tcp"
   "log"
   "strings"
@@ -75,8 +74,6 @@ func txtFileToByteArr(input string) []byte {
 }
 
 func main() {
-  // inputFile := []byte(os.Args[1])
-  // fileIntoBytes := txtFileToByteArr(os.Args[1])
   var fileIntoBytes []byte
   typeOf := "unix" // or "unixgram" or "unixpacket"
   laddr := net.UnixAddr{"/tmp/unixdomaincli", typeOf}
@@ -92,7 +89,6 @@ func main() {
     enc := gob.NewEncoder(&payload) // Will write to network.
     fmt.Print("Enter a file name: ")
     userInput := bufio.NewReader(os.Stdin)
-    // userInput := checkIfImageType(os.Stdin)
     fileName, err := userInput.ReadBytes('\n')
     if err != nil {
       panic(err)
@@ -103,9 +99,6 @@ func main() {
     } else {
       fileIntoBytes = txtFileToByteArr(string(fileName))
     }
-
-    fmt.Println()
-    // fileIntoBytes := txtFileToByteArr(string(fileName))
 
     testHeader := tcp.TCPHeader {
       Options: []tcp.TCPOptions {
@@ -118,13 +111,10 @@ func main() {
         tcp.TCPOptions {Kind: 0xAA, Length: 0xAA},
       },
     }
-    // fmt.Println("First encode")
     testingHeaderEncode := enc.Encode(testHeader)
     if testingHeaderEncode != nil {
         log.Fatal("encode error:", testingHeaderEncode)
     }
-
-    // fmt.Println("First write")
     _, err = conn.Write(payload.Bytes())
     if err != nil {
         panic(err)

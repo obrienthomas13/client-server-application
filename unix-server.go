@@ -23,6 +23,7 @@ func checkIfImageType(file string) bool {
   return false
 }
 
+// Currently works for .png files only
 func byteArrToImgFile(input tcp.TCPHeader) {
   fmt.Println("Convert the image!!")
   img, _, _ := image.Decode(bytes.NewReader(input.Options[0].Data))
@@ -40,127 +41,55 @@ func byteArrToImgFile(input tcp.TCPHeader) {
 }
 
 func byteArrToTxtFile(input tcp.TCPHeader) {
-  // fmt.Println("BYTEARRTOFILE ARE YOU HAPPENING")
-  fileName := "new" + string(input.Options[0].FileName)
-  // fmt.Println("BYTEARRTOFILE ABOUT TO CREATE FILE")
+  var fileName string
+  diffDir := strings.LastIndex(string(input.Options[0].FileName), "/")
+  if diffDir > -1 {
+    fileName = string(input.Options[0].FileName)[:diffDir+1] + "new" + string(input.Options[0].FileName)[diffDir+1:]
+  } else {
+    fileName = "new" + string(input.Options[0].FileName)
+  }
+  // fileName := "tcp/newtcp.go"
   newFile, err := os.Create(fileName)
-  // fmt.Println("BYTEARRTOFILE ERR CHECK")
   if err != nil {
     panic(err)
   }
   defer newFile.Close()
-  // fmt.Println("BYTEARRTOFILE STRINGINPUT")
   stringInput := string(input.Options[0].Data)
-  // fmt.Println("BYTEARRTOFILE WRITE THAT DATA")
   _, err = newFile.WriteString(stringInput)
-  // fmt.Println("BYTEARRTOFILE ERR CHECK")
   if err != nil {
     panic(err)
   }
-  // fmt.Println("BYTEARRTOFILE AFTER ERR CHECK")
-  // writer := bufio.NewWriter(newFile)
-
-  // buffer := make([]byte,1024)
-  // for {
-  //     // n, err := r.Read(buf)
-  //     // if err != nil && err != io.EOF {
-  //     //     panic(err)
-  //     // }
-  //     // if n == 0 {
-  //     //     break
-  //     // }
-  //
-  //     // write a chunk
-  //     if _, err := writer.Write(buf[:n]); err != nil {
-  //         panic(err)
-  //     }
-  // }
 }
 
-// func closeServer() {
-//   os.Remove("/tmp/unixdomain")
-// }
-
 func main() {
-  l, err := net.ListenUnix("unix",  &net.UnixAddr{"/tmp/unixdomain", "unix"})
-  fmt.Print("Let's listen\n")
+  // hard coding for now to make testing smoother
+  unixAddress := "/tmp/unixdomain"
+  // unixAddress := os.Args[1]
+  l, err := net.ListenUnix("unix",  &net.UnixAddr{unixAddress, "unix"})
   if err != nil {
      panic(err)
   }
-  defer os.Remove("/tmp/unixdomain")
+  fmt.Println("Listening on address: " + unixAddress)
+  defer os.Remove(unixAddress)
 
-  fmt.Println("BEGINNING MY DUDE")
   conn, err := l.AcceptUnix()
   fmt.Print("Found connection\n")
   if err != nil {
      panic(err)
   }
-
-  // decoder := gob.NewDecoder(conn)
-  x := 0
   for {
-    fmt.Println("beginning")
-    // fmt.Println("LOOP NUMBER ", x, " MY DUDE")
-    // fmt.Println("beginning")
-    // conn, err := l.AcceptUnix()
-    // fmt.Print("Found connection\n")
-    // if err != nil {
-    //    panic(err)
-    // }
-    // encoder := gob.NewEncoder(conn)
-    // fmt.Println("ESTABLISH DECODER MY DUDE")
     decoder := gob.NewDecoder(conn)
-
-    // // // Decode (receive) the value.
-    // fmt.Println("SAMPLE STRUCT MY DUDE")
-    var testingHeaderDecode tcp.TCPHeader
-    // testingHeaderDecode = tcp.TCPHeader {
-    //   Options: []tcp.TCPOptions {
-    //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
-    //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
-    //   }[],
-    // }
-    // fmt.Println("DECODE THAT STRUCT MY DUDE"))
-    err = decoder.Decode(&testingHeaderDecode)
-    // testHeader = decoder.Decode(&q)
-
-    // fmt.Println("ERROR CHECKING MY DUDE")
+    var incomingTCPHeader tcp.TCPHeader
+    err = decoder.Decode(&incomingTCPHeader)
     if err != nil {
         log.Fatal("decode error:", err)
     }
-    // fmt.Printf(string(testingHeaderDecode.Options[0].Kind))
-
-    // fmt.Println(testingHeaderDecode.Options[0].Data)
-    // fmt.Println("MAKE IT A FILE MY DUDE")
-    if checkIfImageType(string(testingHeaderDecode.Options[0].FileName)) {
-      byteArrToImgFile(testingHeaderDecode)
+    if checkIfImageType(string(incomingTCPHeader.Options[0].FileName)) {
+      byteArrToImgFile(incomingTCPHeader)
     } else {
-      byteArrToTxtFile(testingHeaderDecode)
+      byteArrToTxtFile(incomingTCPHeader)
     }
-    // byteArrToTxtFile(testingHeaderDecode)
-    // testingHeaderDecode
-    // fmt.Printf("let's seperate these two");
-    // fmt.Printf("LIKE REALLY SEPERATE THEM");
-
-    // testingHeaderDecode.Options[0].Data = []byte("")
-    // testingHeaderDecode.Options[0].FileName = []byte("")
-
-   //  testingHeaderDecode = tcp.TCPHeader {
-   //   Options: []tcp.TCPOptions {
-   //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
-   //     tcp.TCPOptions {Kind: 0x00, Length: 0x00},
-   //   },
-   // }
-
-    // fmt.Printf("Testing this out: %s\n", string(buf[:n]));
-
-
-    // fmt.Printf(n);
-    // fmt.Printf("Testing this out: %s\n", "sure");
-    // fmt.Print("")
-    fmt.Println("end")
-    x += 1
-    // conn.Close()
   }
+  fmt.Println("Closing server on: " + unixAddress)
   conn.Close()
 }
