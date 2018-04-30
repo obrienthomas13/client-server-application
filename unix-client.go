@@ -55,26 +55,6 @@ func initialConnection(conn *net.UnixConn) {
   }
 }
 
-// func listenForResponse(clientAddr string) {
-//   fmt.Println("Goroutine: Listen for Response")
-//   l, err := net.ListenUnix("unix",  &net.UnixAddr{clientAddr, "unix"})
-//   if err != nil {
-//      panic(err)
-//   }
-//   conn, err := l.AcceptUnix()
-//   fmt.Print("Found connection\n")
-//   if err != nil {
-//      panic(err)
-//   }
-//   decoder := gob.NewDecoder(conn)
-//   var incomingTCPHeader tcp.TCPHeader
-//   err = decoder.Decode(&incomingTCPHeader)
-//   if err != nil {
-//       log.Fatal("decode error:", err)
-//   }
-//   conn.Close()
-// }
-
 func checkIfImageType(file string) bool {
   imageTypes := [...]string{".gif", ".jpeg", ".jpg", ".pdf", ".png"}
   for _, imgType := range imageTypes {
@@ -150,8 +130,8 @@ func main() {
   initialConnection(conn)
 
   for {
-    var payload bytes.Buffer        // Stand-in for a network connection
-    enc := gob.NewEncoder(&payload) // Will write to network.
+    var payload bytes.Buffer
+    enc := gob.NewEncoder(&payload)
     fmt.Print("Enter a file name: ")
     userInput := bufio.NewReader(os.Stdin)
     fileName, err := userInput.ReadBytes('\n')

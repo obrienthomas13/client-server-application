@@ -44,7 +44,6 @@ func checkIfImageType(file string) bool {
 func parseFileName(input tcp.TCPHeader) (fileName string) {
 	diffDir := strings.LastIndex(string(input.Options[0].FileName), "/")
 	if diffDir > -1 {
-		// fileName = string(input.Options[0].FileName)[:diffDir+1] + "new" + string(input.Options[0].FileName)[diffDir+1:]
 		fileName = "new" + string(input.Options[0].FileName)[diffDir+1:]
 	} else {
 		fileName = "new" + string(input.Options[0].FileName)
@@ -55,7 +54,7 @@ func parseFileName(input tcp.TCPHeader) (fileName string) {
 // Currently works for .png files only
 func byteArrToImgFile(input tcp.TCPHeader) {
 	img, _, _ := image.Decode(bytes.NewReader(input.Options[0].Data))
-	fileName := "new" + string(input.Options[0].FileName)
+  fileName := parseFileName(input)
 	newFile, err := os.Create(fileName)
 	if err != nil {
 		panic(err)
@@ -70,12 +69,6 @@ func byteArrToImgFile(input tcp.TCPHeader) {
 
 func byteArrToTxtFile(input tcp.TCPHeader) {
 	fileName := parseFileName(input)
-	// diffDir := strings.LastIndex(string(input.Options[0].FileName), "/")
-	// if diffDir > -1 {
-	//   fileName = string(input.Options[0].FileName)[:diffDir+1] + "new" + string(input.Options[0].FileName)[diffDir+1:]
-	// } else {
-	//   fileName = "new" + string(input.Options[0].FileName)
-	// }
 	newFile, err := os.Create(fileName)
 	if err != nil {
 		panic(err)
@@ -128,9 +121,7 @@ func clientHandler(l *net.UnixListener, unixAddress string) {
 }
 
 func main() {
-	// hard coding for now to make testing smoother
-	unixAddress := "/tmp/unixdomain"
-	// unixAddress := os.Args[1]
+	unixAddress := os.Args[1]
 	l, err := net.ListenUnix("unix", &net.UnixAddr{unixAddress, "unix"})
 	if err != nil {
 		panic(err)
@@ -139,38 +130,4 @@ func main() {
 	defer os.Remove(unixAddress)
 
 	clientHandler(l, unixAddress)
-
-	// conn, err := l.AcceptUnix()
-	// fmt.Print("Found connection\n")
-	// if err != nil {
-	//    panic(err)
-	// }
-	// for {
-	//   decoder := gob.NewDecoder(conn)
-	//   var incomingTCPHeader tcp.TCPHeader
-	//   err = decoder.Decode(&incomingTCPHeader)
-	//   if err != nil {
-	//       log.Fatal("decode error:", err)
-	//   }
-	//   if !handShakeOne {
-	//     handShakeOne = true
-	//     confirmHandshake(conn, incomingTCPHeader)
-	//     continue
-	//   } else if !handShakeThree {
-	//     handShakeThree = true
-	//     _, result := handshake.ConfirmPacket(incomingTCPHeader)
-	//     if !result {
-	//       panic("Last stage of 3-way handshake failed")
-	//     }
-	//     fmt.Println("cool it worked!")
-	//     continue
-	//   }
-	//   if checkIfImageType(string(incomingTCPHeader.Options[0].FileName)) {
-	//     byteArrToImgFile(incomingTCPHeader)
-	//   } else {
-	//     byteArrToTxtFile(incomingTCPHeader)
-	//   }
-	// }
-	// fmt.Println("Closing server on: " + unixAddress)
-	// conn.Close()
 }
