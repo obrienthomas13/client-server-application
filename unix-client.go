@@ -56,7 +56,7 @@ func initialConnection(conn *net.UnixConn) {
 }
 
 func checkIfImageType(file string) bool {
-  imageTypes := [...]string{".gif", ".jpeg", ".jpg", ".pdf", ".png"}
+  imageTypes := []string{".gif", ".jpeg", ".jpg", ".pdf", ".png"}
   for _, imgType := range imageTypes {
     if strings.Contains(file, imgType) {
       return true
@@ -65,8 +65,11 @@ func checkIfImageType(file string) bool {
   return false
 }
 
-func imgFileToByteArr(input string) []byte {
+func imgFileToByteArr(input string) ([]byte, bool) {
   file, err := os.Open(input)
+  if err != nil {
+    return []byte(""), false
+  }
   defer file.Close()
   if err != nil {
     panic(err)
@@ -83,15 +86,14 @@ func imgFileToByteArr(input string) []byte {
     panic(err)
   }
   result := []byte(buffer.String())
-  return result
+  return result, true
 }
 
-func txtFileToByteArr(input string) []byte {
+func txtFileToByteArr(input string) ([]byte, bool) {
   file, err := os.Open(input)
   if err != nil {
-    panic(err)
+    return []byte(""), false
   }
-
   defer file.Close()
 
   reader := bufio.NewReader(file)
@@ -110,13 +112,12 @@ func txtFileToByteArr(input string) []byte {
   }
   result := []byte(buffer.String())
   buffer.Reset()
-  return result
+  return result, true
 }
 
 func main() {
   var fileIntoBytes []byte
   typeOf := "unix" // or "unixgram" or "unixpacket"
-  // client := "/tmp/unixdomaincli"
   client := os.Args[1]
   server := "/tmp/unixdomain"
   laddr := net.UnixAddr{client, typeOf}
@@ -131,6 +132,7 @@ func main() {
 
   for {
     var payload bytes.Buffer
+    var invalidFile bool
     enc := gob.NewEncoder(&payload)
     fmt.Print("Enter a file name: ")
     userInput := bufio.NewReader(os.Stdin)
@@ -140,9 +142,13 @@ func main() {
     }
     fileName = fileName[:len(fileName)-1]
     if checkIfImageType(string(fileName)) {
-      fileIntoBytes = imgFileToByteArr(string(fileName))
+      fileIntoBytes, invalidFile = imgFileToByteArr(string(fileName))
     } else {
-      fileIntoBytes = txtFileToByteArr(string(fileName))
+      fileIntoBytes, invalidFile = txtFileToByteArr(string(fileName))
+    }
+    if invalidFile != true {
+        fmt.Println("Invalid file")
+        continue
     }
     tcpHeaderSetup := tcp.TCPHeader {
       Options: []tcp.TCPOptions {

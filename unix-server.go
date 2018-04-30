@@ -60,9 +60,6 @@ func byteArrToImgFile(input tcp.TCPHeader) {
 		panic(err)
 	}
 	err = png.Encode(newFile, img)
-	if err != nil {
-		panic(err)
-	}
 	defer newFile.Close()
 
 }
