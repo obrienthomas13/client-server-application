@@ -5,14 +5,13 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+  handshake "./handshake"
 	"image"
 	"image/png"
 	"log"
 	"net"
 	"os"
 	"strings"
-
-	handshake "./handshake"
 	tcp "./tcp"
 )
 
@@ -59,9 +58,12 @@ func byteArrToImgFile(input tcp.TCPHeader) {
 	if err != nil {
 		panic(err)
 	}
+  defer newFile.Close()
 	err = png.Encode(newFile, img)
-	defer newFile.Close()
-
+  if err != nil {
+    panic(err)
+  }
+  fmt.Println("New file: " + fileName)
 }
 
 func byteArrToTxtFile(input tcp.TCPHeader) {
@@ -76,11 +78,12 @@ func byteArrToTxtFile(input tcp.TCPHeader) {
 	if err != nil {
 		panic(err)
 	}
+  fmt.Println("New file: " + fileName)
 }
 
 func clientHandler(l *net.UnixListener, unixAddress string) {
 	conn, err := l.AcceptUnix()
-	fmt.Print("Found connection\n")
+	fmt.Print("Found new connection\n")
 	if err != nil {
 		panic(err)
 	}
@@ -104,7 +107,6 @@ func clientHandler(l *net.UnixListener, unixAddress string) {
 			if !result {
 				panic("Last stage of 3-way handshake failed")
 			}
-			fmt.Println("cool it worked!")
 			continue
 		}
 		if checkIfImageType(string(incomingTCPHeader.Options[0].FileName)) {

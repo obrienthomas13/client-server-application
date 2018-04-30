@@ -117,11 +117,11 @@ func txtFileToByteArr(input string) ([]byte, bool) {
 
 func main() {
   var fileIntoBytes []byte
-  typeOf := "unix" // or "unixgram" or "unixpacket"
+  typeOf := "unix"
   client := os.Args[1]
-  server := "/tmp/unixdomain"
+  server := os.Args[2]
   laddr := net.UnixAddr{client, typeOf}
-  conn, err := net.DialUnix(typeOf, &laddr/*can be nil*/,
+  conn, err := net.DialUnix(typeOf, &laddr,
       &net.UnixAddr{server, typeOf})
   if err != nil {
       panic(err)
