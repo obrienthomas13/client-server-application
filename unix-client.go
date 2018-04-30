@@ -136,7 +136,8 @@ func txtFileToByteArr(input string) []byte {
 func main() {
   var fileIntoBytes []byte
   typeOf := "unix" // or "unixgram" or "unixpacket"
-  client := "/tmp/unixdomaincli"
+  // client := "/tmp/unixdomaincli"
+  client := os.Args[1]
   server := "/tmp/unixdomain"
   laddr := net.UnixAddr{client, typeOf}
   conn, err := net.DialUnix(typeOf, &laddr/*can be nil*/,
