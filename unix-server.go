@@ -7,6 +7,7 @@ import (
 	"fmt"
   handshake "./handshake"
 	"image"
+  "image/jpeg"
 	"image/png"
 	"log"
 	"net"
@@ -50,7 +51,7 @@ func parseFileName(input tcp.TCPHeader) (fileName string) {
 	return
 }
 
-// Currently works for .png files only
+// Works for png/jpg files only
 func byteArrToImgFile(input tcp.TCPHeader) {
 	img, _, _ := image.Decode(bytes.NewReader(input.Options[0].Data))
   fileName := parseFileName(input)
@@ -59,7 +60,11 @@ func byteArrToImgFile(input tcp.TCPHeader) {
 		panic(err)
 	}
   defer newFile.Close()
-	err = png.Encode(newFile, img)
+  if fileName[len(fileName)-4:] == ".png" {
+    err = png.Encode(newFile, img)
+  } else if fileName[len(fileName)-4:] == ".jpg" {
+  	err = jpeg.Encode(newFile, img, nil)
+  }
   if err != nil {
     panic(err)
   }

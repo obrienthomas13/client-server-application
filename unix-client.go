@@ -7,6 +7,7 @@ import (
   "fmt"
   handshake "./handshake"
   "os"
+  "image/jpeg"
   "image/png"
   "io"
   "log"
@@ -75,13 +76,20 @@ func imgFileToByteArr(input string) ([]byte, bool) {
     panic(err)
   }
 
-  img, err := png.Decode(file)
-  if err != nil {
-    panic(err)
-  }
-
   buffer := new(bytes.Buffer)
-  err = png.Encode(buffer, img)
+  if input[len(input)-4:] == ".png" {
+    img, err := png.Decode(file)
+    if err != nil {
+      panic(err)
+    }
+    err = png.Encode(buffer, img)
+  } else if input[len(input)-4:] == ".jpg" {
+    img, err := jpeg.Decode(file)
+    if err != nil {
+      panic(err)
+    }
+    err = jpeg.Encode(buffer, img, nil)
+  }
   if err != nil {
     panic(err)
   }
